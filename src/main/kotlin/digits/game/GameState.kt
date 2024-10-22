@@ -5,6 +5,7 @@ data class GameState(
     val playerTwoBoard: Board = Board(),
     var commonNumbers: List<Int> = emptyList(),
     var nextNumber: Int = 0,
+    var nextPlayerToPlay: Int = 1,
     var playerOneScore: Int = 0,
     var playerTwoScore: Int = 0
 )

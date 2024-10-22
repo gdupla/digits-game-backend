@@ -20,6 +20,18 @@ class GameService {
     }
 
     fun placeNumber(request: GameApi.PlaceNumberRequest) {
+        if (request.player != gameState.nextPlayerToPlay) {
+            throw Exception("Wrong player")
+        }
+        if (request.row > 4 || request.row < 0) {
+            throw Exception("Wrong row")
+        }
+        if (request.col > 4 || request.col < 0) {
+            throw Exception("Wrong column")
+        }
+        if (!gameState.commonNumbers.contains(request.number)) {
+            throw Exception("Wrong number")
+        }
         val board = if (request.player == 1) {
             gameState.playerOneBoard
         } else {
@@ -42,6 +54,11 @@ class GameService {
         gameState.commonNumbers -= number
         gameState.commonNumbers += gameState.nextNumber
         gameState.nextNumber = generateNextNumber()
+        if (gameState.nextPlayerToPlay == 1) {
+            gameState.nextPlayerToPlay = 2
+        } else {
+            gameState.nextPlayerToPlay = 1
+        }
     }
 
     private fun calculateConnections(board: Board, row: Int, col: Int, number: Int): Int {
@@ -74,7 +91,7 @@ class GameService {
 
     private fun generateNextNumber(): Int {
         val numbers = listOf(1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9, 9, 9)
-       return numbers.random()
+        return numbers.random()
     }
 
     // Additional methods to handle game logic
