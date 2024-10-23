@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="digits.game.inbound.http.GameApiTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2024-10-23T20:58:31" hostname="MWKS-HF1W4L4R3K" time="0.031">
-  <properties/>
-  <testcase name="placeNumber()" classname="digits.game.inbound.http.GameApiTest" time="0.027"/>
-  <testcase name="getGame()" classname="digits.game.inbound.http.GameApiTest" time="0.002"/>
-  <testcase name="createGame()" classname="digits.game.inbound.http.GameApiTest" time="0.001"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
