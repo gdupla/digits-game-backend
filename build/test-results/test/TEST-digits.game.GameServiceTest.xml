@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="digits.game.GameServiceTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2024-10-23T13:48:52" hostname="MWKS-HF1W4L4R3K" time="0.87">
+  <properties/>
+  <testcase name="createGame should create a game with two players()" classname="digits.game.GameServiceTest" time="0.808"/>
+  <testcase name="placeNumber should throw exception if it's not the player's turn()" classname="digits.game.GameServiceTest" time="0.039"/>
+  <testcase name="placeNumber should throw exception if the game is already finished()" classname="digits.game.GameServiceTest" time="0.002"/>
+  <testcase name="placeNumber should place a number on the board and update score()" classname="digits.game.GameServiceTest" time="0.005"/>
+  <testcase name="placeNumber should throw exception if number is invalid()" classname="digits.game.GameServiceTest" time="0.001"/>
+  <testcase name="placeNumber should throw exception if row or col it's outside the board()" classname="digits.game.GameServiceTest" time="0.001"/>
+  <testcase name="getGame throws exception if the game is not found()" classname="digits.game.GameServiceTest" time="0.001"/>
+  <testcase name="placeNumber should throw exception if the cell is already filled()" classname="digits.game.GameServiceTest" time="0.001"/>
+  <testcase name="getGame returns the game()" classname="digits.game.GameServiceTest" time="0.001"/>
+  <testcase name="placeNumber finish the game when both boards are complete()" classname="digits.game.GameServiceTest" time="0.002"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
