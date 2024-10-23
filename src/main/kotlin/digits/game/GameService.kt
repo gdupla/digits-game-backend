@@ -1,64 +1,91 @@
 package digits.game
 
-import digits.game.inbound.http.GameApi
+import digits.players.Player
 import org.springframework.stereotype.Service
 
 @Service
-class GameService {
+class GameService(
+    private val gameRepository: GameRepository
+) {
+    fun createGame(playerOneId: Player.Id, playerTwoId: Player.Id): Game {
+        val game = Game(
+            nextNumber = generateNextNumber(),
+            commonNumbers = listOf(generateNextNumber(), generateNextNumber(), generateNextNumber())
+        )
 
-    private val gameState = GameState(
-        nextNumber = generateNextNumber(),
-        commonNumbers = listOf(generateNextNumber(), generateNextNumber(), generateNextNumber())
-    )
+        game.players.add(playerOneId)
+        game.players.add(playerTwoId)
+        game.nextPlayerId = playerOneId  // Player 1 starts
 
-    fun getGameState(): GameState {
-        return gameState
+        gameRepository.createOrUpdate(game)
+
+        return game
     }
 
-    fun generateInitGameState(): GameState {
-        return gameState
-    }
+    fun getGame(gameId: Game.Id) = gameRepository.findById(gameId) ?: throw Exception("Game not found")
 
-    fun placeNumber(request: GameApi.PlaceNumberRequest) {
-        if (request.player != gameState.nextPlayerToPlay) {
-            throw Exception("Wrong player")
+    fun placeNumber(gameId: Game.Id, playerId: Player.Id, row: Int, col: Int, number: Int): Game {
+        val game = gameRepository.findById(gameId) ?: throw Exception("Game not found")
+
+        // Validation: Check if the player is the next one to play
+        if (game.nextPlayerId != playerId) {
+            throw Exception("It's not your turn")
         }
-        if (request.row > 4 || request.row < 0) {
-            throw Exception("Wrong row")
+
+        // Validation: Ensure row and col are within board limits
+        if (row !in 0..4 || col !in 0..4) {
+            throw Exception("Row and column must be between 0 and 4")
         }
-        if (request.col > 4 || request.col < 0) {
-            throw Exception("Wrong column")
+
+        // Validation: Ensure the number is one of the available common numbers
+        if (number !in game.commonNumbers) {
+            throw Exception("Invalid number selection")
         }
-        if (!gameState.commonNumbers.contains(request.number)) {
-            throw Exception("Wrong number")
-        }
-        val board = if (request.player == 1) {
-            gameState.playerOneBoard
+
+        val board = if (playerId == game.players[0]) {
+            game.playerOneBoard
         } else {
-            gameState.playerTwoBoard
+            game.playerTwoBoard
         }
-        val row = request.row
-        val col = request.col
-        val number = request.number
 
+        // Validation: Ensure the cell selected to place the number is empty
+        if (board.cells[row][col] != 0) {
+            throw Exception("Cell is already filled")
+        }
         board.cells[row][col] = number
 
         val connections = calculateConnections(board, row, col, number)
         val score = connections * number
-        if (request.player == 1) {
-            gameState.playerOneScore += score
+        if (playerId == game.players[0]) {
+            game.playerOneScore += score
         } else {
-            gameState.playerOneScore += score
+            game.playerOneScore += score
         }
 
-        gameState.commonNumbers -= number
-        gameState.commonNumbers += gameState.nextNumber
-        gameState.nextNumber = generateNextNumber()
-        if (gameState.nextPlayerToPlay == 1) {
-            gameState.nextPlayerToPlay = 2
+        // Remove placed number and add a new random one
+        game.commonNumbers -= number
+        game.commonNumbers += game.nextNumber
+        game.nextNumber = generateNextNumber()
+
+        // Switch the next player
+        game.nextPlayerId = if (game.nextPlayerId == game.players[0]) {
+            game.players[1]
         } else {
-            gameState.nextPlayerToPlay = 1
+            game.players[0]
         }
+
+        // Check if the game is finished
+        if (isGameFinished(game)) {
+            game.isFinished = true
+        }
+        gameRepository.createOrUpdate(game)
+
+        return game
+    }
+
+    private fun isGameFinished(game: Game): Boolean {
+        return game.playerOneBoard.cells.flatten().none { it == 0 } &&
+                game.playerTwoBoard.cells.flatten().none { it == 0 }
     }
 
     private fun calculateConnections(board: Board, row: Int, col: Int, number: Int): Int {
@@ -93,6 +120,4 @@ class GameService {
         val numbers = listOf(1, 2, 2, 3, 3, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9, 9, 9)
         return numbers.random()
     }
-
-    // Additional methods to handle game logic
 }
