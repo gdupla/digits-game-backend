@@ -66,7 +66,7 @@ class GameService(
         if (playerId == game.players[0]) {
             game.playerOneScore += score
         } else {
-            game.playerOneScore += score
+            game.playerTwoScore += score
         }
 
         // Remove placed number and add a new random one

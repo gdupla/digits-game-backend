@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="digits.shared.inbound.http.ExceptionsHandlerTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2024-10-23T13:48:53" hostname="MWKS-HF1W4L4R3K" time="0.086">
+<testsuite name="digits.shared.inbound.http.ExceptionsHandlerTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2024-10-23T20:58:31" hostname="MWKS-HF1W4L4R3K" time="0.086">
   <properties/>
-  <testcase name="Given any exception When handling Then should hide exception details()" classname="digits.shared.inbound.http.ExceptionsHandlerTest" time="0.007"/>
-  <testcase name="Given an access denied exception When handling Then map to forbidden()" classname="digits.shared.inbound.http.ExceptionsHandlerTest" time="0.078"/>
-  <system-out><![CDATA[15:48:53.922 [Test worker] ERROR digits.shared.inbound.http.ExceptionsHandler -- fff
+  <testcase name="Given any exception When handling Then should hide exception details()" classname="digits.shared.inbound.http.ExceptionsHandlerTest" time="0.008"/>
+  <testcase name="Given an access denied exception When handling Then map to forbidden()" classname="digits.shared.inbound.http.ExceptionsHandlerTest" time="0.077"/>
+  <system-out><![CDATA[22:58:31.563 [Test worker] ERROR digits.shared.inbound.http.ExceptionsHandler -- fff
 java.lang.Exception: fff
 	at digits.shared.inbound.http.ExceptionsHandlerTest.Given any exception When handling Then should hide exception details(ExceptionsHandlerTest.kt:45)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
@@ -90,7 +90,7 @@ java.lang.Exception: fff
 	at org.gradle.process.internal.worker.child.SystemApplicationClassLoaderWorker.call(SystemApplicationClassLoaderWorker.java:71)
 	at worker.org.gradle.process.internal.worker.GradleWorkerMain.run(GradleWorkerMain.java:69)
 	at worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
-15:48:54.005 [Test worker] INFO digits.shared.inbound.http.ExceptionsHandler -- xxx
+22:58:31.646 [Test worker] INFO digits.shared.inbound.http.ExceptionsHandler -- xxx
 digits.shared.AccessDenied: xxx
 	at digits.shared.inbound.http.ExceptionsHandlerTest.Given an access denied exception When handling Then map to forbidden(ExceptionsHandlerTest.kt:28)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)

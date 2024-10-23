@@ -18,25 +18,25 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/game")
 class GameApi(val gameService: GameService) {
     @PostMapping("/create")
-    fun createGame(@RequestParam playerOneId: String, @RequestParam playerTwoId: String): ResponseEntity<Game> {
+    fun createGame(@RequestParam playerOneId: String, @RequestParam playerTwoId: String): ResponseEntity<GameResponse> {
         val game = gameService.createGame(
             Player.Id(UUID.fromString(playerOneId)),
             Player.Id(UUID.fromString(playerTwoId))
         )
-        return ResponseEntity.ok(game)
+        return ResponseEntity.ok(GameResponse(game))
     }
 
     @GetMapping("/{gameId}")
-    fun getGame(@PathVariable gameId: String): ResponseEntity<Game> {
+    fun getGame(@PathVariable gameId: String): ResponseEntity<GameResponse> {
         val game = gameService.getGame(Game.Id(UUID.fromString(gameId)))
-        return ResponseEntity.ok(game)
+        return ResponseEntity.ok(GameResponse(game))
     }
 
     @PostMapping("/{gameId}/placeNumber")
     fun placeNumber(
         @PathVariable gameId: String,
         @RequestBody placeNumberRequest: PlaceNumberRequest
-    ): ResponseEntity<Game> {
+    ): ResponseEntity<GameResponse> {
         val game = gameService.placeNumber(
             Game.Id(UUID.fromString(gameId)),
             Player.Id(placeNumberRequest.playerId),
@@ -44,7 +44,7 @@ class GameApi(val gameService: GameService) {
             placeNumberRequest.col,
             placeNumberRequest.number
         )
-        return ResponseEntity.ok(game)
+        return ResponseEntity.ok(GameResponse(game))
     }
 
     data class PlaceNumberRequest(

@@ -37,7 +37,7 @@ class GameApiTest {
 
         // Then
         assertThat(result.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(result.body!!).isEqualTo(game)
+        assertThat(result.body!!).isEqualTo(GameResponse(game))
     }
 
     @Test
@@ -53,7 +53,7 @@ class GameApiTest {
 
         // Then
         assertThat(result.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(result.body!!).isEqualTo(game)
+        assertThat(result.body!!).isEqualTo(GameResponse(game))
     }
 
     @Test
@@ -72,6 +72,6 @@ class GameApiTest {
 
         // Then
         assertThat(result.statusCode).isEqualTo(HttpStatus.OK)
-        assertThat(result.body!!).isEqualTo(game)
+        assertThat(result.body!!).isEqualTo(GameResponse(game))
     }
 }
