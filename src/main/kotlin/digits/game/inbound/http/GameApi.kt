@@ -26,7 +26,7 @@ class GameApi(val gameService: GameService) {
     }
 
     @GetMapping("/{gameId}")
-    fun getGameState(@PathVariable gameId: String): ResponseEntity<Game> {
+    fun getGame(@PathVariable gameId: String): ResponseEntity<Game> {
         val game = gameService.getGame(Game.Id(UUID.fromString(gameId)))
         return ResponseEntity.ok(game)
     }

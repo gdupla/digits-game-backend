@@ -1,6 +1,9 @@
 package digits.game
 
 import digits.players.Player
+import digits.shared.InvalidArgument
+import digits.shared.InvalidState
+import digits.shared.NotFound
 import org.springframework.stereotype.Service
 
 @Service
@@ -22,24 +25,28 @@ class GameService(
         return game
     }
 
-    fun getGame(gameId: Game.Id) = gameRepository.findById(gameId) ?: throw Exception("Game not found")
+    fun getGame(gameId: Game.Id) = gameRepository.findById(gameId) ?: throw NotFound("Game not found.")
 
     fun placeNumber(gameId: Game.Id, playerId: Player.Id, row: Int, col: Int, number: Int): Game {
-        val game = gameRepository.findById(gameId) ?: throw Exception("Game not found")
+        val game = getGame(gameId)
 
+        // Validation: Check if the game is not finished
+        if(game.isFinished) {
+            throw InvalidState("The game is already finished.")
+        }
         // Validation: Check if the player is the next one to play
         if (game.nextPlayerId != playerId) {
-            throw Exception("It's not your turn")
+            throw InvalidArgument("It's not your turn.")
         }
 
         // Validation: Ensure row and col are within board limits
         if (row !in 0..4 || col !in 0..4) {
-            throw Exception("Row and column must be between 0 and 4")
+            throw InvalidArgument("Row and column must be between 0 and 4.")
         }
 
         // Validation: Ensure the number is one of the available common numbers
         if (number !in game.commonNumbers) {
-            throw Exception("Invalid number selection")
+            throw InvalidArgument("Invalid number selection.")
         }
 
         val board = if (playerId == game.players[0]) {
@@ -50,7 +57,7 @@ class GameService(
 
         // Validation: Ensure the cell selected to place the number is empty
         if (board.cells[row][col] != 0) {
-            throw Exception("Cell is already filled")
+            throw InvalidArgument("Cell is already filled.")
         }
         board.cells[row][col] = number
 
