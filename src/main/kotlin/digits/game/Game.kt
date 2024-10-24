@@ -1,14 +1,14 @@
 package digits.game
 
-import digits.players.Player
+import digits.auth.User
 import java.util.UUID
 
 data class Game(
     val id: Id = Id.generate(),
     val playerOneBoard: Board = Board(),
     val playerTwoBoard: Board = Board(),
-    val players: MutableList<Player.Id> = mutableListOf(),
-    var nextPlayerId: Player.Id? = null,
+    val players: MutableList<User.Id> = mutableListOf(),
+    var nextUserId: User.Id? = null,
     var commonNumbers: List<Int> = emptyList(),
     var nextNumber: Int = 0,
     var playerOneScore: Int = 0,

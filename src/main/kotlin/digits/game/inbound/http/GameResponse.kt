@@ -20,7 +20,7 @@ data class GameResponse(
         playerOneBoard = game.playerOneBoard.cells,
         playerTwoBoard = game.playerTwoBoard.cells,
         players = game.players.map { it.value },
-        nextPlayerId = game.nextPlayerId?.value,
+        nextPlayerId = game.nextUserId?.value,
         commonNumbers = game.commonNumbers,
         nextNumber = game.nextNumber,
         playerOneScore = game.playerOneScore,

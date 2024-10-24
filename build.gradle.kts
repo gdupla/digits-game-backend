@@ -35,11 +35,21 @@ dependencies {
     // Spring Boot DevTools (for live reloading during development)
     developmentOnly("org.springframework.boot:spring-boot-devtools")
 
+    // Security and AuthN
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    implementation("org.springframework.security:spring-security-config") // JWT and OAuth2
+    implementation("org.springframework.security:spring-security-web")
+    implementation("io.jsonwebtoken:jjwt:0.9.1")
+
+    // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.security:spring-security-test")
     testImplementation("io.mockk:mockk:1.13.13")
     testImplementation("com.ninja-squad:springmockk:4.0.2")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.0")
+
 }
 
 kotlin {

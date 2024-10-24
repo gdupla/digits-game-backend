@@ -1,6 +1,6 @@
 package digits.game
 
-import digits.players.Player
+import digits.auth.User
 import digits.shared.InvalidArgument
 import digits.shared.InvalidState
 import digits.shared.NotFound
@@ -10,15 +10,15 @@ import org.springframework.stereotype.Service
 class GameService(
     private val gameRepository: GameRepository
 ) {
-    fun createGame(playerOneId: Player.Id, playerTwoId: Player.Id): Game {
+    fun createGame(userOneId: User.Id, userTwoId: User.Id): Game {
         val game = Game(
             nextNumber = generateNextNumber(),
             commonNumbers = listOf(generateNextNumber(), generateNextNumber(), generateNextNumber())
         )
 
-        game.players.add(playerOneId)
-        game.players.add(playerTwoId)
-        game.nextPlayerId = playerOneId  // Player 1 starts
+        game.players.add(userOneId)
+        game.players.add(userTwoId)
+        game.nextUserId = userOneId  // Player 1 starts
 
         gameRepository.createOrUpdate(game)
 
@@ -27,7 +27,7 @@ class GameService(
 
     fun getGame(gameId: Game.Id) = gameRepository.findById(gameId) ?: throw NotFound("Game not found.")
 
-    fun placeNumber(gameId: Game.Id, playerId: Player.Id, row: Int, col: Int, number: Int): Game {
+    fun placeNumber(gameId: Game.Id, userId: User.Id, row: Int, col: Int, number: Int): Game {
         val game = getGame(gameId)
 
         // Validation: Check if the game is not finished
@@ -35,7 +35,7 @@ class GameService(
             throw InvalidState("The game is already finished.")
         }
         // Validation: Check if the player is the next one to play
-        if (game.nextPlayerId != playerId) {
+        if (game.nextUserId != userId) {
             throw InvalidArgument("It's not your turn.")
         }
 
@@ -49,7 +49,7 @@ class GameService(
             throw InvalidArgument("Invalid number selection.")
         }
 
-        val board = if (playerId == game.players[0]) {
+        val board = if (userId == game.players[0]) {
             game.playerOneBoard
         } else {
             game.playerTwoBoard
@@ -63,7 +63,7 @@ class GameService(
 
         val connections = calculateConnections(board, row, col, number)
         val score = connections * number
-        if (playerId == game.players[0]) {
+        if (userId == game.players[0]) {
             game.playerOneScore += score
         } else {
             game.playerTwoScore += score
@@ -75,7 +75,7 @@ class GameService(
         game.nextNumber = generateNextNumber()
 
         // Switch the next player
-        game.nextPlayerId = if (game.nextPlayerId == game.players[0]) {
+        game.nextUserId = if (game.nextUserId == game.players[0]) {
             game.players[1]
         } else {
             game.players[0]

@@ -2,7 +2,7 @@ package digits.game.inbound.http
 
 import digits.game.Game
 import digits.game.GameService
-import digits.players.Player
+import digits.auth.User
 import io.mockk.every
 import io.mockk.mockk
 import org.assertj.core.api.Assertions.assertThat
@@ -24,16 +24,16 @@ class GameApiTest {
     @Test
     fun createGame() {
         // Given
-        val playerOneId = Player.Id.generate()
-        val playerTwoId = Player.Id.generate()
+        val userOneId = User.Id.generate()
+        val userTwoId = User.Id.generate()
         val game = Game(
-            players = mutableListOf(playerOneId, playerTwoId)
+            players = mutableListOf(userOneId, userTwoId)
         )
 
-        every { gameService.createGame(playerOneId, playerTwoId) } returns game
+        every { gameService.createGame(userOneId, userTwoId) } returns game
 
         // When
-        val result = gameApi.createGame(playerOneId.value.toString(), playerTwoId.value.toString())
+        val result = gameApi.createGame(userOneId.value.toString(), userTwoId.value.toString())
 
         // Then
         assertThat(result.statusCode).isEqualTo(HttpStatus.OK)
@@ -59,16 +59,16 @@ class GameApiTest {
     @Test
     fun placeNumber() {
         // Given
-        val playerOneId = Player.Id.generate()
+        val userOneId = User.Id.generate()
         val gameId = Game.Id.generate()
         val game = Game(id = gameId)
 
-        every { gameService.placeNumber(gameId, playerOneId, 0 ,0, 1) } returns game
+        every { gameService.placeNumber(gameId, userOneId, 0 ,0, 1) } returns game
 
         // When
         val result = gameApi.placeNumber(
             gameId.value.toString(),
-            placeNumberRequest = GameApi.PlaceNumberRequest(playerOneId.value, 0, 0, 1))
+            placeNumberRequest = GameApi.PlaceNumberRequest(userOneId.value, 0, 0, 1))
 
         // Then
         assertThat(result.statusCode).isEqualTo(HttpStatus.OK)

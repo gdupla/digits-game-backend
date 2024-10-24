@@ -2,10 +2,9 @@ package digits.game.inbound.http
 
 import digits.game.GameService
 import digits.game.Game
-import digits.players.Player
+import digits.auth.User
 import java.util.UUID
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -20,8 +19,8 @@ class GameApi(val gameService: GameService) {
     @PostMapping("/create")
     fun createGame(@RequestParam playerOneId: String, @RequestParam playerTwoId: String): ResponseEntity<GameResponse> {
         val game = gameService.createGame(
-            Player.Id(UUID.fromString(playerOneId)),
-            Player.Id(UUID.fromString(playerTwoId))
+            User.Id(UUID.fromString(playerOneId)),
+            User.Id(UUID.fromString(playerTwoId))
         )
         return ResponseEntity.ok(GameResponse(game))
     }
@@ -39,7 +38,7 @@ class GameApi(val gameService: GameService) {
     ): ResponseEntity<GameResponse> {
         val game = gameService.placeNumber(
             Game.Id(UUID.fromString(gameId)),
-            Player.Id(placeNumberRequest.playerId),
+            User.Id(placeNumberRequest.playerId),
             placeNumberRequest.row,
             placeNumberRequest.col,
             placeNumberRequest.number

@@ -2,7 +2,7 @@ package digits.game.storage
 
 import digits.game.Board
 import digits.game.Game
-import digits.players.Player
+import digits.auth.User
 
 fun Game.toEntity() =
     GameEntity(
@@ -14,7 +14,7 @@ fun Game.toEntity() =
         commonNumbers = this.commonNumbers.toMutableList(),
         playerOneScore = this.playerOneScore,
         playerTwoScore = this.playerTwoScore,
-        nextPlayerId = this.nextPlayerId?.value,
+        nextPlayerId = this.nextUserId?.value,
         isFinished = this.isFinished
     )
 
@@ -23,8 +23,8 @@ fun GameEntity.toGame() =
         id = Game.Id(this.id!!),
         playerOneBoard = this.playerOneBoard.toBoard(),
         playerTwoBoard = this.playerTwoBoard.toBoard(),
-        players = this.players.map { Player.Id(it) }.toMutableList(),
-        nextPlayerId = Player.Id(this.nextPlayerId!!),
+        players = this.players.map { User.Id(it) }.toMutableList(),
+        nextUserId = User.Id(this.nextPlayerId!!),
         commonNumbers = this.commonNumbers,
         nextNumber = this.nextNumber!!,
         playerOneScore = this.playerOneScore!!,
