@@ -8,6 +8,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.oauth2.client.registration.ClientRegistration
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
@@ -16,7 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter
 ) {
-
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
         http
@@ -42,5 +43,22 @@ class SecurityConfig(
     @Bean
     fun passwordEncoder(): PasswordEncoder {
         return BCryptPasswordEncoder()
+    }
+
+    @Bean
+    fun clientRegistrationRepository(): InMemoryClientRegistrationRepository {
+        val googleClientRegistration = ClientRegistration.withRegistrationId("google")
+            .clientId("your-google-client-id") // Use the GitHub secret here
+            .clientSecret("your-google-client-secret") // Use the GitHub secret here
+            .scope("profile", "email")
+            .authorizationUri("https://accounts.google.com/o/oauth2/auth")
+            .tokenUri("https://oauth2.googleapis.com/token")
+            .userInfoUri("https://www.googleapis.com/oauth2/v3/userinfo")
+            .userNameAttributeName("sub")
+            .redirectUri("http://localhost:8080/login/oauth2/code/google") // Your static redirect URI
+            .clientName("Google")
+            .build()
+
+        return InMemoryClientRegistrationRepository(googleClientRegistration)
     }
 }
