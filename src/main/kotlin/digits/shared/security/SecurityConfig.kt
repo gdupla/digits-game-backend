@@ -38,9 +38,9 @@ class SecurityConfig(
                     .requestMatchers("/auth/**").permitAll() // Allow public access to /auth endpoints
                     .anyRequest().authenticated() // Require authentication for all other requests
             }
-            .oauth2Login { oauth2Login ->
-                oauth2Login // Configure OAuth2 login for Google
-            }
+            //.oauth2Login { oauth2Login ->
+            //    oauth2Login // Configure OAuth2 login for Google
+            //}
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java) // Add JWT filter
 
         return http.build()

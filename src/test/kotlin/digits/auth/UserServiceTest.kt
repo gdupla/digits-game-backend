@@ -46,13 +46,13 @@ class UserServiceTest {
         val email = "user@user.com"
         val user = User(name = username, encodedPassword = password, email = email)
 
-        every { userRepository.getUserFromUsername(username) } returns user
+        every { userRepository.getUser(user.id) } returns user
 
         // Act
-        val userDetails = userService.loadUserByUsername(username)
+        val userDetails = userService.loadUserByUsername(user.id.value.toString())
 
         // Assert
-        assertThat(userDetails.username).isEqualTo(email)
+        assertThat(userDetails.username).isEqualTo(username)
         assertThat(userDetails.password).isEqualTo(password) // This will be encoded
         assertThat(userDetails.isEnabled).isTrue
         assertThat(userDetails.isAccountNonExpired).isTrue
@@ -60,20 +60,20 @@ class UserServiceTest {
         assertThat(userDetails.isCredentialsNonExpired).isTrue
         assertThat(userDetails.authorities).isEmpty()
 
-        verify(exactly = 1) { userRepository.getUserFromUsername(username) }
+        verify(exactly = 1) { userRepository.getUser(user.id) }
     }
 
     @Test
     fun `should throw UsernameNotFoundException when user does not exist`() {
         // Given
-        val username = "testUser"
-        every { userRepository.getUserFromUsername(username) } returns null
+        val userId = User.Id.generate()
+        every { userRepository.getUser(userId) } returns null
 
         // When & Then
         val exception = assertThrows<NotFound> {
-            userService.loadUserByUsername(username)
+            userService.loadUserByUsername(userId.value.toString())
         }
 
-        assertThat(exception.message).isEqualTo("User testUser was not found.")
+        assertThat(exception.message).isEqualTo("User ${userId.value} was not found.")
     }
 }

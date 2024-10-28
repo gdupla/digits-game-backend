@@ -26,24 +26,23 @@ class JwtTokenProvider {
             .compact()
     }
 
-    fun getUsernameFromToken(token: String): String {
-        val claims: Claims = Jwts.parserBuilder()
-            .setSigningKey(secretKey)
-            .build()
-            .parseClaimsJws(token)
-            .body
-        return claims.subject
-    }
-
     fun validateToken(token: String): Boolean {
         return try {
-            Jwts.parserBuilder()
-                .setSigningKey(secretKey) // Ensure to use the same key for validation
-                .build()
-                .parseClaimsJws(token)
+            extractAllClaims(token)
             true
         } catch (e: Exception) {
             false
         }
+    }
+
+    fun extractUserId(token: String): String {
+        return extractAllClaims(token).body.subject // Assuming userId is set as the subject
+    }
+
+    private fun extractAllClaims(token: String):  io.jsonwebtoken.Jws<Claims> {
+        return Jwts.parserBuilder()
+            .setSigningKey(secretKey) // Ensure to use the same key for validation
+            .build()
+            .parseClaimsJws(token)
     }
 }

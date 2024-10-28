@@ -1,6 +1,7 @@
 package digits.auth
 
 import digits.shared.NotFound
+import java.util.UUID
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -21,15 +22,16 @@ class UserService(
         userRepository.createOrUpdate(user)
     }
 
-    fun getUserFromEmail(email: String): User {
-        return userRepository.getUserFromEmail(email) ?: throw NotFound("User with email $email was not found.")
+    fun getUserFromUsername(username: String): User {
+        return userRepository.getUserFromUsername(username) ?:  throw NotFound("User $username was not found.")
     }
 
-    override fun loadUserByUsername(username: String): UserDetails {
-        val user = userRepository.getUserFromUsername(username) ?: throw NotFound("User $username was not found.")
+    override fun loadUserByUsername(userId: String): UserDetails {
+        val user = userRepository.getUser(User.Id(UUID.fromString(userId)))
+            ?: throw NotFound("User $userId was not found.")
         // Return a UserDetails object
         return org.springframework.security.core.userdetails.User(
-            user.email,
+            user.name,
             user.encodedPassword,
             true,
             true,

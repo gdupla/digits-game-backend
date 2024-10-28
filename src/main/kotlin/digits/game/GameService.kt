@@ -10,28 +10,51 @@ import org.springframework.stereotype.Service
 class GameService(
     private val gameRepository: GameRepository
 ) {
-    fun createGame(userOneId: User.Id, userTwoId: User.Id): Game {
+    fun createGame(name: String, creatorId: User.Id): Game {
         val game = Game(
             nextNumber = generateNextNumber(),
-            commonNumbers = listOf(generateNextNumber(), generateNextNumber(), generateNextNumber())
+            commonNumbers = listOf(generateNextNumber(), generateNextNumber(), generateNextNumber()),
+            name = name,
+            creator = creatorId
         )
 
-        game.players.add(userOneId)
-        game.players.add(userTwoId)
-        game.nextUserId = userOneId  // Player 1 starts
+        game.players.add(creatorId)
+        game.nextUserId = creatorId  // Player 1 starts
 
         gameRepository.createOrUpdate(game)
 
         return game
     }
 
+    fun getGames() = gameRepository.findAll()
+
     fun getGame(gameId: Game.Id) = gameRepository.findById(gameId) ?: throw NotFound("Game not found.")
+
+    fun addSecondPlayer(gameId: Game.Id, secondPlayerId: User.Id): Game {
+        val game = getGame(gameId)
+        if(game.players.size != 1) {
+            throw InvalidState("The game is not configured correctly.")
+        }
+        if(game.status != Game.GameStatus.CREATED) {
+            throw InvalidState("The game is not waiting for a second player.")
+        }
+        game.status = Game.GameStatus.IN_PROGRESS
+        game.players.add(secondPlayerId)
+
+        gameRepository.createOrUpdate(game)
+
+        return game
+    }
 
     fun placeNumber(gameId: Game.Id, userId: User.Id, row: Int, col: Int, number: Int): Game {
         val game = getGame(gameId)
 
         // Validation: Check if the game is not finished
-        if(game.isFinished) {
+        if(game.status == Game.GameStatus.CREATED) {
+            throw InvalidState("The game is waiting for a second player.")
+        }
+
+        if(game.status == Game.GameStatus.FINISHED) {
             throw InvalidState("The game is already finished.")
         }
         // Validation: Check if the player is the next one to play
@@ -83,7 +106,7 @@ class GameService(
 
         // Check if the game is finished
         if (isGameFinished(game)) {
-            game.isFinished = true
+            game.status = Game.GameStatus.FINISHED
         }
         gameRepository.createOrUpdate(game)
 

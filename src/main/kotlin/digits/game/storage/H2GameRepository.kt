@@ -14,4 +14,8 @@ class H2GameRepository(val gameEntityRepository: GameEntityRepository): GameRepo
     override fun findById(gameId: Game.Id): Game? {
         return gameEntityRepository.findById(gameId.value).getOrNull()?.toGame()
     }
+
+    override fun findAll(): List<Game> {
+        return gameEntityRepository.findAll().map { it.toGame() }
+    }
 }

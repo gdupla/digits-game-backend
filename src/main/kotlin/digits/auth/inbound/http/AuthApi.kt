@@ -24,10 +24,11 @@ class AuthApi(
 
     @PostMapping("/login")
     fun login(@RequestBody loginDto: LoginDto): ResponseEntity<String> {
-        val authentication = authenticationManager.authenticate(
-            UsernamePasswordAuthenticationToken(loginDto.username, loginDto.password)
+        val user = userService.getUserFromUsername(loginDto.username)
+        authenticationManager.authenticate(
+            UsernamePasswordAuthenticationToken(user.id.value.toString(), loginDto.password)
         )
-        val token = jwtTokenProvider.generateToken(authentication.name)
+        val token = jwtTokenProvider.generateToken(user.id.value.toString())
         return ResponseEntity.ok(token)
     }
 

@@ -15,10 +15,6 @@ class H2UserRepository(val userEntityRepository: UserEntityRepository) : UserRep
         return userEntityRepository.findById(userId.value).getOrNull()?.toUser()
     }
 
-    override fun getUserFromEmail(email: String): User? {
-        return userEntityRepository.findUserEntityByEmail(email)?.toUser()
-    }
-
     override fun getUserFromUsername(username: String): User? {
         return userEntityRepository.findUserEntityByName(username)?.toUser()
     }

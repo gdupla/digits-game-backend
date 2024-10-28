@@ -25,35 +25,61 @@ class GameServiceTest {
     }
 
     @Test
-    fun `createGame should create a game with two players`() {
+    fun `createGame should create a game`() {
         // Given
-        val userOneId = User.Id.generate()
-        val userTwoId = User.Id.generate()
+        val creatorId = User.Id.generate()
+        val gameName = "Game name"
 
         // When
-        val game = gameService.createGame(userOneId, userTwoId)
+        val game = gameService.createGame(gameName, creatorId)
 
         // Then
         assertThat(game).isNotNull
-        assertThat(game.players.size).isEqualTo(2)
-        assertThat(game.players[0]).isEqualTo(userOneId)
-        assertThat(game.players[1]).isEqualTo(userTwoId)
-        assertThat(game.nextUserId).isEqualTo(userOneId)
+        assertThat(game.name).isEqualTo("Game name")
+        assertThat(game.creator).isEqualTo(creatorId)
+        assertThat(game.players.size).isEqualTo(1)
+        assertThat(game.players[0]).isEqualTo(creatorId)
+        assertThat(game.nextUserId).isEqualTo(creatorId)
         assertThat(game.commonNumbers.size).isEqualTo(3)
         assertThat(game.nextNumber).isGreaterThan(0).isLessThan(10)
         assertThat(game.playerOneScore).isEqualTo(0)
         assertThat(game.playerTwoScore).isEqualTo(0)
         assertThat(game.playerOneBoard.cells.flatten().distinct()).containsExactly(0)
         assertThat(game.playerTwoBoard.cells.flatten().distinct()).containsExactly(0)
+        assertThat(game.status).isEqualTo(Game.GameStatus.CREATED)
 
         verify { gameRepository.createOrUpdate(game) }
+    }
+
+    @Test
+    fun `getGames returns the list of games`() {
+        // Given
+        val gameOneId = Game.Id.generate()
+        val creatorOneId = User.Id.generate()
+        val gameOneName = "Game One name"
+        val gameOne = Game(id = gameOneId, creator = creatorOneId, name = gameOneName)
+
+        val gameTwoId = Game.Id.generate()
+        val creatorTwoId = User.Id.generate()
+        val gameTwoName = "Game Two name"
+        val gameTwo = Game(id = gameTwoId, creator = creatorTwoId, name = gameTwoName)
+
+        every { gameRepository.findAll() } returns listOf(gameOne, gameTwo)
+
+        // When
+        val gamesFound = gameService.getGames()
+
+        // Then
+        assertThat(gamesFound).containsExactlyInAnyOrder(gameOne, gameTwo)
     }
 
     @Test
     fun `getGame returns the game`() {
         // Given
         val gameId = Game.Id.generate()
-        val game = Game(id = gameId)
+        val creatorId = User.Id.generate()
+        val gameName = "Game name"
+        val game = Game(id = gameId, creator = creatorId, name = gameName)
 
         every { gameRepository.findById(gameId) } returns game
 
@@ -79,16 +105,91 @@ class GameServiceTest {
     }
 
     @Test
+    fun `addPlayer adds a second player and starts the game`() {
+        // Given
+        val gameId = Game.Id.generate()
+        val creatorId = User.Id.generate()
+        val gameName = "Game name"
+        val game = Game(
+            id = gameId,
+            creator = creatorId,
+            name = gameName,
+            players = mutableListOf(creatorId),
+            status = Game.GameStatus.CREATED
+        )
+
+        every { gameRepository.findById(gameId) } returns game
+
+        val secondPlayerId = User.Id.generate()
+
+        // When
+        val result = gameService.addSecondPlayer(gameId, secondPlayerId)
+
+        // Then
+        assertThat(result.status).isEqualTo(Game.GameStatus.IN_PROGRESS)
+        assertThat(result.players).containsExactlyInAnyOrder(creatorId, secondPlayerId)
+    }
+
+    @Test
+    fun `addPlayer throws exception when players size is not 1`() {
+        // Given
+        val gameId = Game.Id.generate()
+        val creatorId = User.Id.generate()
+        val gameName = "Game name"
+        val game = Game(
+            id = gameId,
+            creator = creatorId,
+            name = gameName,
+            status = Game.GameStatus.CREATED
+        )
+
+        every { gameRepository.findById(gameId) } returns game
+
+        val secondPlayerId = User.Id.generate()
+
+        // When & Then
+        val exception = assertThrows<InvalidState> { gameService.addSecondPlayer(gameId, secondPlayerId) }
+        assertThat(exception.message).isEqualTo("The game is not configured correctly.")
+    }
+
+    @Test
+    fun `addPlayer throws exception when status is not CREATED`() {
+        // Given
+        val gameId = Game.Id.generate()
+        val creatorId = User.Id.generate()
+        val gameName = "Game name"
+        val game = Game(
+            id = gameId,
+            creator = creatorId,
+            name = gameName,
+            players = mutableListOf(creatorId),
+            status = Game.GameStatus.IN_PROGRESS
+        )
+
+        every { gameRepository.findById(gameId) } returns game
+
+        val secondPlayerId = User.Id.generate()
+
+        // When & Then
+        val exception = assertThrows<InvalidState> { gameService.addSecondPlayer(gameId, secondPlayerId) }
+        assertThat(exception.message).isEqualTo("The game is not waiting for a second player.")
+    }
+
+    @Test
     fun `placeNumber should place a number on the board and update score`() {
         // Given
         val userOneId = User.Id.generate()
         val userTwoId = User.Id.generate()
+        val gameName = "Game name"
 
         val game = Game(
+            creator = userOneId,
+            name = gameName,
             players = mutableListOf(userOneId, userTwoId),
             nextUserId = userOneId,
             commonNumbers = mutableListOf(1, 1, 3),
-            nextNumber = 4
+            nextNumber = 4,
+            status = Game.GameStatus.IN_PROGRESS
         )
         every { gameRepository.findById(game.id) } returns game
 
@@ -134,15 +235,40 @@ class GameServiceTest {
     }
 
     @Test
+    fun `placeNumber should throw exception if the game is not in progress`() {
+        // Given
+        val creatorId = User.Id.generate()
+        val gameName = "Game name"
+
+        val game = Game(
+            creator = creatorId,
+            name = gameName,
+            players = mutableListOf(creatorId),
+            nextUserId = creatorId,
+            status = Game.GameStatus.CREATED
+        )
+        every { gameRepository.findById(game.id) } returns game
+
+        // When & Then
+        val exception = assertThrows<InvalidState> {
+            gameService.placeNumber(game.id, creatorId, 0, 0, 1) // The game is finished
+        }
+        assertThat(exception.message).isEqualTo("The game is waiting for a second player.")
+    }
+
+    @Test
     fun `placeNumber should throw exception if the game is already finished`() {
         // Given
         val userOneId = User.Id.generate()
         val userTwoId = User.Id.generate()
+        val gameName = "Game name"
 
         val game = Game(
+            creator = userOneId,
+            name = gameName,
             players = mutableListOf(userOneId, userTwoId),
             nextUserId = userOneId,
-            isFinished = true
+            status = Game.GameStatus.FINISHED
         )
         every { gameRepository.findById(game.id) } returns game
 
@@ -158,12 +284,16 @@ class GameServiceTest {
         // Given
         val userOneId = User.Id.generate()
         val userTwoId = User.Id.generate()
+        val gameName = "Game name"
 
         val game = Game(
+            creator = userOneId,
+            name = gameName,
             players = mutableListOf(userOneId, userTwoId),
             nextUserId = userOneId,
             commonNumbers = mutableListOf(1, 1, 3),
-            nextNumber = 4
+            nextNumber = 4,
+            status = Game.GameStatus.IN_PROGRESS
         )
         every { gameRepository.findById(game.id) } returns game
 
@@ -179,12 +309,16 @@ class GameServiceTest {
         // Given
         val userOneId = User.Id.generate()
         val userTwoId = User.Id.generate()
+        val gameName = "Game name"
 
         val game = Game(
+            creator = userOneId,
+            name = gameName,
             players = mutableListOf(userOneId, userTwoId),
             nextUserId = userOneId,
             commonNumbers = mutableListOf(1, 2, 3),
-            nextNumber = 4
+            nextNumber = 4,
+            status = Game.GameStatus.IN_PROGRESS
         )
         every { gameRepository.findById(game.id) } returns game
 
@@ -200,12 +334,16 @@ class GameServiceTest {
         // Given
         val userOneId = User.Id.generate()
         val userTwoId = User.Id.generate()
+        val gameName = "Game name"
 
         val game = Game(
+            creator = userOneId,
+            name = gameName,
             players = mutableListOf(userOneId, userTwoId),
             nextUserId = userOneId,
             commonNumbers = mutableListOf(1, 2, 3),
-            nextNumber = 4
+            nextNumber = 4,
+            status = Game.GameStatus.IN_PROGRESS
         )
         every { gameRepository.findById(game.id) } returns game
 
@@ -236,12 +374,16 @@ class GameServiceTest {
         // Given
         val userOneId = User.Id.generate()
         val userTwoId = User.Id.generate()
+        val gameName = "Game name"
 
         val game = Game(
+            creator = userOneId,
+            name = gameName,
             players = mutableListOf(userOneId, userTwoId),
             nextUserId = userOneId,
             commonNumbers = mutableListOf(1, 2, 3),
-            nextNumber = 4
+            nextNumber = 4,
+            status = Game.GameStatus.IN_PROGRESS
         )
         every { gameRepository.findById(game.id) } returns game
 
@@ -264,7 +406,11 @@ class GameServiceTest {
         val cellsPlayerOne = Array(5) { Array(5) { 1 } }
         cellsPlayerOne[0][0] = 0
 
+        val gameName = "Game name"
+
         val game = Game(
+            creator = userOneId,
+            name = gameName,
             players = mutableListOf(userOneId, userTwoId),
             nextUserId = userOneId,
             commonNumbers = mutableListOf(1, 1, 3),
@@ -274,7 +420,8 @@ class GameServiceTest {
             ),
             playerTwoBoard = Board(
                 cells = Array(5) { Array(5) { 1 } }
-            )
+            ),
+            status = Game.GameStatus.IN_PROGRESS
         )
         every { gameRepository.findById(game.id) } returns game
 
@@ -282,6 +429,6 @@ class GameServiceTest {
         val updatedGameOne = gameService.placeNumber(game.id, userOneId, 0, 0, 1)
 
         // Then
-        assertThat(updatedGameOne.isFinished).isTrue
+        assertThat(updatedGameOne.status).isEqualTo(Game.GameStatus.FINISHED)
     }
 }

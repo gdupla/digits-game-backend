@@ -10,6 +10,10 @@ data class GameEntity(
     @Id
     val id: UUID?,
 
+    var name: String?,
+
+    var creator: UUID?,
+
     @ElementCollection
     var players: MutableList<UUID> = mutableListOf(),
 
@@ -30,5 +34,5 @@ data class GameEntity(
 
     var nextPlayerId: UUID?,
 
-    var isFinished: Boolean?
+    var status: String?
 )

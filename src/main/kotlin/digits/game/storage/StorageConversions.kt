@@ -7,6 +7,8 @@ import digits.auth.User
 fun Game.toEntity() =
     GameEntity(
         id = this.id.value,
+        name = this.name,
+        creator = this.creator.value,
         players = this.players.map { it.value }.toMutableList(),
         playerOneBoard = this.playerOneBoard.cells.flatMap { it.map { it } }.toMutableList(),
         playerTwoBoard = this.playerTwoBoard.cells.flatMap { it.map { it } }.toMutableList(),
@@ -15,12 +17,14 @@ fun Game.toEntity() =
         playerOneScore = this.playerOneScore,
         playerTwoScore = this.playerTwoScore,
         nextPlayerId = this.nextUserId?.value,
-        isFinished = this.isFinished
+        status = this.status.name
     )
 
 fun GameEntity.toGame() =
     Game(
         id = Game.Id(this.id!!),
+        name = this.name!!,
+        creator = User.Id(this.creator!!),
         playerOneBoard = this.playerOneBoard.toBoard(),
         playerTwoBoard = this.playerTwoBoard.toBoard(),
         players = this.players.map { User.Id(it) }.toMutableList(),
@@ -29,7 +33,7 @@ fun GameEntity.toGame() =
         nextNumber = this.nextNumber!!,
         playerOneScore = this.playerOneScore!!,
         playerTwoScore = this.playerTwoScore!!,
-        isFinished = this.isFinished!!
+        status = Game.GameStatus.valueOf(this.status!!)
     )
 
 fun MutableList<Int>.toBoard(): Board {

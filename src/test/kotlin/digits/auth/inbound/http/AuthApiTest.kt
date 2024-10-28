@@ -1,5 +1,6 @@
 package digits.auth.inbound.http
 
+import digits.auth.User
 import digits.auth.UserService
 import digits.auth.inbound.http.AuthApi
 import digits.shared.security.JwtTokenProvider
@@ -30,16 +31,22 @@ class AuthApiTest {
             username = "testUser"
         )
         val authentication: Authentication = mockk()
-        every {
-            authenticationManager.authenticate(UsernamePasswordAuthenticationToken("testUser", "password123"))
-        } returns authentication
-        every { authentication.name } returns "testUser"
-        every { jwtTokenProvider.generateToken("testUser") } returns "token"
+        val user = User(
+            id = User.Id.generate(),
+            name = "testUser",
+            email = "test@test.es",
+            encodedPassword = "encodedPassword"
+        )
+        every { userService.getUserFromUsername("testUser") } returns user
+        every { jwtTokenProvider.generateToken(user.id.value.toString()) } returns "token"
 
         // When
         val result = authApi.login(loginDto)
 
         // Then
+        verify {
+            authenticationManager.authenticate(UsernamePasswordAuthenticationToken(user.id.value.toString(), "password123"))
+        }
         assertThat(result.statusCode).isEqualTo(HttpStatus.OK)
         assertThat(result.body).isEqualTo("token")
     }
