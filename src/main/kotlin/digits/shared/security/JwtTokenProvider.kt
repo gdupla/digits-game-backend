@@ -3,13 +3,15 @@ package digits.shared.security
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
+import io.jsonwebtoken.security.Keys
 import java.util.Date
 import org.springframework.stereotype.Component
 
 @Component
 class JwtTokenProvider {
     private val expirationTime: Long = 604800000 // 1 week in milliseconds
-    private val secretKey = "your-secret-key"
+
+    private val secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512)
 
     fun generateToken(username: String): String {
         val claims: Claims = Jwts.claims().setSubject(username)
@@ -20,18 +22,26 @@ class JwtTokenProvider {
             .setClaims(claims)
             .setIssuedAt(currentDate)
             .setExpiration(expiryDate)
-            .signWith(SignatureAlgorithm.HS512, secretKey)
+            .signWith(secretKey)
             .compact()
     }
 
     fun getUsernameFromToken(token: String): String {
-        return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).body.subject
+        val claims: Claims = Jwts.parserBuilder()
+            .setSigningKey(secretKey)
+            .build()
+            .parseClaimsJws(token)
+            .body
+        return claims.subject
     }
 
     fun validateToken(token: String): Boolean {
         return try {
-            val claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).body
-            !claims.expiration.before(Date())
+            Jwts.parserBuilder()
+                .setSigningKey(secretKey) // Ensure to use the same key for validation
+                .build()
+                .parseClaimsJws(token)
+            true
         } catch (e: Exception) {
             false
         }

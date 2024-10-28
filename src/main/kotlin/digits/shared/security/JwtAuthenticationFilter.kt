@@ -1,11 +1,13 @@
 package digits.shared.security
 
 import digits.auth.UserService
+import digits.shared.inbound.http.ExceptionsHandler
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletException
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import java.io.IOException
+import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Lazy
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
@@ -19,7 +21,6 @@ class JwtAuthenticationFilter(
     private val jwtTokenProvider: JwtTokenProvider,
     @Lazy private val userService: UserService
 ) : OncePerRequestFilter() {
-
     @Throws(ServletException::class, IOException::class)
     override fun doFilterInternal(
         request: HttpServletRequest,

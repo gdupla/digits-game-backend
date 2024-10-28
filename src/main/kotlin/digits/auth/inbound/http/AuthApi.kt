@@ -1,9 +1,10 @@
-package digits.auth.inbound
+package digits.auth.inbound.http
 
-import digits.auth.User
 import digits.auth.UserService
+import digits.shared.inbound.http.ExceptionsHandler
 import digits.shared.security.JwtTokenProvider
 import java.util.UUID
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -19,11 +20,12 @@ class AuthApi(
     private val jwtTokenProvider: JwtTokenProvider,
     private val userService: UserService
 ) {
+    private val log = LoggerFactory.getLogger(ExceptionsHandler::class.java)
 
     @PostMapping("/login")
     fun login(@RequestBody loginDto: LoginDto): ResponseEntity<String> {
         val authentication = authenticationManager.authenticate(
-            UsernamePasswordAuthenticationToken(loginDto.email, loginDto.password)
+            UsernamePasswordAuthenticationToken(loginDto.username, loginDto.password)
         )
         val token = jwtTokenProvider.generateToken(authentication.name)
         return ResponseEntity.ok(token)
@@ -40,7 +42,7 @@ class AuthApi(
     }
 
     data class LoginDto(
-        val email: String,
+        val username: String,
         val password: String
     )
 

@@ -1,6 +1,7 @@
-package digits.auth.inbound
+package digits.auth.inbound.http
 
 import digits.auth.UserService
+import digits.auth.inbound.http.AuthApi
 import digits.shared.security.JwtTokenProvider
 import io.mockk.every
 import io.mockk.mockk
@@ -26,11 +27,11 @@ class AuthApiTest {
         // Given
         val loginDto = AuthApi.LoginDto(
             password = "password123",
-            email = "user@user.com"
+            username = "testUser"
         )
         val authentication: Authentication = mockk()
         every {
-            authenticationManager.authenticate(UsernamePasswordAuthenticationToken("user@user.com", "password123"))
+            authenticationManager.authenticate(UsernamePasswordAuthenticationToken("testUser", "password123"))
         } returns authentication
         every { authentication.name } returns "testUser"
         every { jwtTokenProvider.generateToken("testUser") } returns "token"
